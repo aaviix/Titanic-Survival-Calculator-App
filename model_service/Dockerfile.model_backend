@@ -15,6 +15,9 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
+# Install curl for health check
+RUN apt-get update && apt-get install -y curl
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 
@@ -26,6 +29,9 @@ COPY . .
 
 # Expose the port that the application listens on.
 EXPOSE 8000
+
+# Health Check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the application.
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
