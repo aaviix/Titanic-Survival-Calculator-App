@@ -7,7 +7,8 @@ variables:
   DOCKER_TLS_CERTDIR: "/certs"
 
 services:
-  - docker:dind
+  - name: docker:dind
+    command: ["--tls=false"]
 
 before_script:
   - docker info
@@ -43,7 +44,8 @@ backend_tests:
   stage: test
   image: docker:latest
   services:
-    - docker:dind
+    - name: docker:dind
+      command: ["--tls=false"]
   script:
     - echo "Starting backend and db services"
     - docker-compose up -d db
@@ -68,7 +70,8 @@ frontend_tests:
   stage: test
   image: docker:latest
   services:
-    - docker:dind
+    - name: docker:dind
+      command: ["--tls=false"]
   script:
     - echo "Starting db, backend, and frontend services"
     - docker-compose up -d db
@@ -88,7 +91,8 @@ model_backend_tests:
   stage: test
   image: docker:latest
   services:
-    - docker:dind
+    - name: docker:dind
+      command: ["--tls=false"]
   script:
     - echo "Starting model backend service"
     - docker-compose up -d model_backend
