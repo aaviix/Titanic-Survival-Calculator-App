@@ -3,7 +3,7 @@ import requests
 
 # Replace with the actual URLs of your deployed services
 MAIN_BACKEND_URL = "http://127.0.0.1:8080"
-MODEL_BACKEND_URL = "http://127.0.0.1:8000"
+MODEL_BACKEND_URL = "http://0.0.0.0:8000"
 
 def test_main_backend_to_model_backend():
     # Ensure both servers are running before this test
