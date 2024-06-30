@@ -2,8 +2,8 @@ import pytest
 import requests
 
 # Use service names defined in docker-compose.yml as hostnames
-MAIN_BACKEND_URL = "http://web_backend:8080"
-MODEL_BACKEND_URL = "http://model_backend:8000"
+MAIN_BACKEND_URL = "http://127.0.0.1:8080"
+MODEL_BACKEND_URL = "http://127.0.0.1:8000"
 
 def test_main_backend_to_model_backend():
     # Ensure both servers are running before this test
