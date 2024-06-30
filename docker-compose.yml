@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:latest
-    container_name: postgres_db_container
+    container_name: postgresdb_container
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -12,15 +12,17 @@ services:
 
   model_backend:
     build:
-      context: ./model_backend
-    container_name: model_backend_container
+      context: ./model_service
+      dockerfile: Dockerfile.model_backend
+    container_name: model_service_backend_container
     ports:
       - "8000:8000"
 
   web_backend:
     build:
-      context: ./model_service
-    container_name: web_backend_container
+      context: ./web_service/backend
+      dockerfile: Dockerfile.web_backend
+    container_name: web_service_backend_container
     ports:
       - "8080:8080"
     depends_on:
@@ -31,8 +33,9 @@ services:
     build:
       context: ./web_service/vue-frontend
       dockerfile: Dockerfile
-    container_name: frontend_container
+    container_name: web_service_frontend_container
     ports:
       - "3000:3000"
+    platform: linux/amd64
     depends_on:
       - web_backend
