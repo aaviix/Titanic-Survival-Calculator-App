@@ -22,11 +22,13 @@ services:
     container_name: model_service_backend_container
     ports:
       - "8000:8000"
+    environment:
+      - MODEL_BACKEND_URL=http://model_backend:8000
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      test: ["CMD-SHELL", "curl -f http://0.0.0.0:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -38,13 +40,16 @@ services:
     container_name: web_service_backend_container
     ports:
       - "8080:8080"
+    environment:
+      - MAIN_BACKEND_URL=http://web_backend:8080
+      - MODEL_BACKEND_URL=http://model_backend:8000
     depends_on:
       db:
         condition: service_healthy
       model_backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      test: ["CMD-SHELL", "curl -f http://0.0.0.0:8080/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -56,7 +61,6 @@ services:
     container_name: web_service_frontend_container
     ports:
       - "3000:3000"
-    platform: linux/amd64
     depends_on:
       web_backend:
         condition: service_healthy

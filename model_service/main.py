@@ -7,6 +7,10 @@ import uvicorn
 
 app = FastAPI()
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 with open('models/Decision Tree.pkl', 'rb') as file:
     decision_tree = load(file)
 
@@ -92,4 +96,4 @@ def home():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
