@@ -1,0 +1,76 @@
+stages:
+  - build
+  - test
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+services:
+  - docker:dind
+
+before_script:
+  - docker info
+  - echo "Environment Variables:"
+  - env
+
+# Job for building backend Docker image
+build_backend:
+  stage: build
+  image: docker:latest
+  script:
+    - echo "Building backend image"
+    - docker-compose build backend
+
+# Job for building frontend Docker image
+build_frontend:
+  stage: build
+  image: docker:latest
+  script:
+    - echo "Building frontend image"
+    - docker-compose build frontend
+
+# Job for running backend pytest tests
+backend_tests:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "Starting backend and db services"
+    - docker-compose up -d db
+    - docker-compose up -d backend
+    - echo "Waiting for backend service to be healthy"
+    - docker-compose ps
+    - docker-compose logs backend
+    - sleep 60  # Increased sleep time to ensure services are fully up
+    - docker-compose ps  # Check the status again
+    - docker-compose logs backend  # Added logs to troubleshoot backend issues
+    - echo "Running pytest tests"
+    - docker-compose exec backend /bin/sh -c "pip install -r requirements.txt && pytest --junitxml=/app/backend/pytest-report.xml"
+  artifacts:
+    when: always
+    reports:
+      junit: backend/pytest-report.xml
+    paths:
+      - backend/pytest-report.xml
+
+# Job for running frontend Cypress tests
+frontend_tests:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "Starting db, backend, and frontend services"
+    - docker-compose up -d db
+    - docker-compose up -d backend
+    - docker-compose up -d frontend
+    - sleep 60  # Wait for the frontend and backend to be fully up
+    - echo "Running Cypress tests"
+    - docker-compose exec frontend /bin/sh -c "npm install && npx cypress run"
+  artifacts:
+    when: always
+    paths:
+      - vue-frontend/cypress/screenshots
+      - vue-frontend/cypress/videos

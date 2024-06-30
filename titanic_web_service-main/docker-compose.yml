@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    container_name: backend_service_container
+    volumes:
+      - ./backend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  frontend:
+    build: ./vue-frontend
+    ports:
+      - "3000:3000"
+    container_name: frontend_service_container
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+
+  model_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.model_backend
+    ports:
+      - "8000:8000"
+    environment:
+      FLASK_ENV: development
+    secrets:
+      - gitcredentials
+    depends_on:
+      - db
+
+secrets:
+  gitcredentials:
+    file: .git-credentials

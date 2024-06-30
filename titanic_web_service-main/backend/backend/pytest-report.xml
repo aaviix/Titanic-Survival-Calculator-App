@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.443" timestamp="2024-06-30T12:13:12.699454" hostname="11fc67d07ffb"><testcase classname="tests.integration.test_integration" name="test_main_backend_to_model_backend" time="0.021"><failure message="assert 500 == 200&#10; +  where 500 = &lt;Response [500]&gt;.status_code">def test_main_backend_to_model_backend():
+        # Ensure both servers are running before this test
+        passenger_data = {
+            "pclass": 1,
+            "sex": 0,
+            "age": 30,
+            "fare": 100,
+            "traveled_alone": 1,
+            "embarked": 2
+        }
+        model_name = "random_forest"
+    
+        response = requests.post(f"{MAIN_BACKEND_URL}/surv_or_not/{model_name}", json=passenger_data)
+&gt;       assert response.status_code == 200
+E       assert 500 == 200
+E        +  where 500 = &lt;Response [500]&gt;.status_code
+
+tests/integration/test_integration.py:21: AssertionError</failure></testcase><testcase classname="tests.unit.test_main" name="test_passenger_model_invalid" time="0.000" /><testcase classname="tests.unit.test_main" name="test_passenger_model_valid" time="0.000" /><testcase classname="tests.unit.test_main" name="test_read_root" time="0.035" /><testcase classname="tests.unit.test_main" name="test_surv_or_not" time="0.002" /></testsuite></testsuites>
