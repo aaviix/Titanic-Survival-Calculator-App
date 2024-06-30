@@ -9,6 +9,11 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   model_backend:
     build:
@@ -17,17 +22,32 @@ services:
     container_name: model_service_backend_container
     ports:
       - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   web_backend:
     build:
-      context: ./web_service/backend
+      context: ./web_service
       dockerfile: Dockerfile.web_backend
     container_name: web_service_backend_container
     ports:
       - "8080:8080"
     depends_on:
-      - db
-      - model_backend
+      db:
+        condition: service_healthy
+      model_backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   frontend:
     build:
@@ -38,4 +58,5 @@ services:
       - "3000:3000"
     platform: linux/amd64
     depends_on:
-      - web_backend
+      web_backend:
+        condition: service_healthy
