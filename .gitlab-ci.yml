@@ -20,7 +20,7 @@ build_backend:
   image: docker:latest
   script:
     - echo "Building backend image"
-    - docker-compose build backend
+    - docker-compose build web_backend
 
 # Job for building frontend Docker image
 build_frontend:
@@ -29,6 +29,14 @@ build_frontend:
   script:
     - echo "Building frontend image"
     - docker-compose build frontend
+
+# Job for building model backend Docker image
+build_model_backend:
+  stage: build
+  image: docker:latest
+  script:
+    - echo "Building model backend image"
+    - docker-compose build model_backend
 
 # Job for running backend pytest tests
 backend_tests:
@@ -39,21 +47,21 @@ backend_tests:
   script:
     - echo "Starting backend and db services"
     - docker-compose up -d db
-    - docker-compose up -d backend
+    - docker-compose up -d web_backend
     - echo "Waiting for backend service to be healthy"
     - docker-compose ps
-    - docker-compose logs backend
+    - docker-compose logs web_backend
     - sleep 60  # Increased sleep time to ensure services are fully up
     - docker-compose ps  # Check the status again
-    - docker-compose logs backend  # Added logs to troubleshoot backend issues
+    - docker-compose logs web_backend  # Added logs to troubleshoot backend issues
     - echo "Running pytest tests"
-    - docker-compose exec backend /bin/sh -c "pip install -r requirements.txt && pytest --junitxml=/app/backend/pytest-report.xml"
+    - docker-compose exec web_backend /bin/sh -c "pip install -r requirements.txt && pytest --junitxml=/app/web_backend/pytest-report.xml"
   artifacts:
     when: always
     reports:
-      junit: backend/pytest-report.xml
+      junit: web_backend/pytest-report.xml
     paths:
-      - backend/pytest-report.xml
+      - web_backend/pytest-report.xml
 
 # Job for running frontend Cypress tests
 frontend_tests:
@@ -64,7 +72,7 @@ frontend_tests:
   script:
     - echo "Starting db, backend, and frontend services"
     - docker-compose up -d db
-    - docker-compose up -d backend
+    - docker-compose up -d web_backend
     - docker-compose up -d frontend
     - sleep 60  # Wait for the frontend and backend to be fully up
     - echo "Running Cypress tests"
@@ -72,5 +80,29 @@ frontend_tests:
   artifacts:
     when: always
     paths:
-      - vue-frontend/cypress/screenshots
-      - vue-frontend/cypress/videos
+      - web_service/vue-frontend/cypress/screenshots
+      - web_service/vue-frontend/cypress/videos
+
+# Job for running model backend pytest tests
+model_backend_tests:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "Starting model backend service"
+    - docker-compose up -d model_backend
+    - echo "Waiting for model backend service to be healthy"
+    - docker-compose ps
+    - docker-compose logs model_backend
+    - sleep 60  # Increased sleep time to ensure services are fully up
+    - docker-compose ps  # Check the status again
+    - docker-compose logs model_backend  # Added logs to troubleshoot model backend issues
+    - echo "Running pytest tests"
+    - docker-compose exec model_backend /bin/sh -c "pip install -r requirements.txt && pytest --junitxml=/app/model_backend/pytest-report.xml"
+  artifacts:
+    when: always
+    reports:
+      junit: model_backend/pytest-report.xml
+    paths:
+      - model_backend/pytest-report.xml

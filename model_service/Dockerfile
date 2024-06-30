@@ -2,13 +2,6 @@
 
 FROM python:3.12.3-slim as base
 
-# Prevents Python from writing pyc files.
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Keeps Python from buffering stdout and stderr to avoid situations where
-# the application crashes without emitting any logs due to buffering.
-ENV PYTHONUNBUFFERED=1
-
 WORKDIR /app
 
 # Create a non-privileged user that the app will run under.
@@ -23,16 +16,7 @@ RUN adduser \
     appuser
 
 # Copy the requirements file into the container
-COPY backend/requirements.txt .
-
-# Install the dependencies
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install uvicorn
-
-# Switch to the non-privileged user to run the application.
-USER appuser
+COPY requirements.txt .
 
 # Copy the source code into the container.
 COPY . .
