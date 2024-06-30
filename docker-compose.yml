@@ -33,7 +33,7 @@ services:
 
   web_backend:
     build:
-      context: ./web_service
+      context: ./web_service/backend
       dockerfile: Dockerfile.web_backend
     container_name: web_service_backend_container
     ports:
