@@ -35,8 +35,6 @@ with open('models/Stochastic Gradient Descent.pkl', 'rb') as file:
 with open('models/Support Vector Machine.pkl', 'rb') as file:
     support_vector_machine = load(file)
 
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,8 +42,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
 
 class Passenger(BaseModel):
     pclass: int
@@ -75,25 +71,17 @@ def predict_survival(model_name, data):
     else:
         return {"error": "Model not found"}
 
-   
     X = np.array([[data.pclass, data.sex, data.age, data.fare, data.traveled_alone, data.embarked]])
-
-   
     prediction = model.predict(X)
-
     return {"survived": bool(prediction[0])}
-
 
 @app.post("/surv/{model_name}")
 async def surv_or_not(model_name: str, passenger: Passenger):
     return predict_survival(model_name, passenger)
 
-
-
 @app.get("/")
 def home():
     return {"message": "Hello World"}
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
