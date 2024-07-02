@@ -1,7 +1,7 @@
-# Use an official Python runtime as a parent image
+# syntax=docker/dockerfile:1.3
+
 FROM python:3.10-slim
 
-# Set the working directory in the container
 WORKDIR /app
 
 # Copy requirements.txt before the rest of the files
@@ -21,6 +21,9 @@ COPY . /app
 
 # Expose the API port
 EXPOSE 8080
+
+# Health Check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the FastAPI server
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

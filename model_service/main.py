@@ -73,6 +73,7 @@ def predict_survival(model_name, data):
 
     X = np.array([[data.pclass, data.sex, data.age, data.fare, data.traveled_alone, data.embarked]])
     prediction = model.predict(X)
+
     return {"survived": bool(prediction[0])}
 
 @app.post("/surv/{model_name}")

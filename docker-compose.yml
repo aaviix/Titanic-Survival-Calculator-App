@@ -3,14 +3,14 @@ version: '3.8'
 services:
   db:
     image: postgres:latest
-    container_name: postgresdb_container
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: titanic
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "pg_isready", "-U", "user"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -19,12 +19,8 @@ services:
     build:
       context: ./model_service
       dockerfile: Dockerfile.model_backend
-    container_name: model_service_backend_container
     ports:
       - "8000:8000"
-    depends_on:
-      db:
-        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 30s
@@ -35,16 +31,13 @@ services:
     build:
       context: ./web_service/backend
       dockerfile: Dockerfile.web_backend
-    container_name: web_service_backend_container
-    ports:
-      - "8080:8080"
     environment:
       - MODEL_BACKEND_URL=http://model_backend:8000
+    ports:
+      - "8080:8080"
     depends_on:
-      db:
-        condition: service_healthy
-      model_backend:
-        condition: service_healthy
+      - model_backend
+      - db
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 30s
@@ -54,10 +47,10 @@ services:
   frontend:
     build:
       context: ./web_service/vue-frontend
-      dockerfile: Dockerfile
-    container_name: web_service_frontend_container
+      dockerfile: dockerfile
     ports:
       - "3000:3000"
     depends_on:
       web_backend:
         condition: service_healthy
+
