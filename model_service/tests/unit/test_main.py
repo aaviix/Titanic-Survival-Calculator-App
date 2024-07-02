@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 
 client = TestClient(app)
 
+@pytest.fixture
 def test_read_main():
     response = client.get("/")
     assert response.status_code == 200
